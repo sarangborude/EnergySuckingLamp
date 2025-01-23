@@ -28,6 +28,7 @@ class AttractionSystem: System {
     required init(scene: RealityKit.Scene) {
         Task {
             if let immersiveContentEntity = try? await Entity(named: "Immersive", in: realityKitContentBundle) {
+                // Keep in mind that the ParticleEmitter is not a child of the Orb in Reality Composer Pro scene.
                 if let particleEntity = immersiveContentEntity.findEntity(named: "ParticleEmitter") {
                     mainParticleEntity = particleEntity
                 }
@@ -45,8 +46,12 @@ class AttractionSystem: System {
             }
         }
 
+        // set the attraction center for the particle emitters to the energySuckerEntity
+        // We use the context.entities(matching:,updatingSystemWhen:) method instead of perform query because perform query will make your entities not update.
         let particleEmitterEntities = context.entities(matching: particleEmitterQuery, updatingSystemWhen: .rendering)
+        var particleEntityCount = 0
         for particleEmitterEntity in particleEmitterEntities {
+            particleEntityCount += 1
             if var particleEmitter = particleEmitterEntity.components[ParticleEmitterComponent.self] {
                 let energySuckerPos = energySuckerEntity.position(relativeTo: particleEmitterEntity)
                 particleEmitter.mainEmitter.attractionCenter = energySuckerPos
@@ -55,11 +60,11 @@ class AttractionSystem: System {
                 fatalError("Cannot find particle emitter")
             }
         }
+        print("Particle entities detected: \(particleEntityCount)")
         
         let orbEntities = context.entities(matching: orbQuery, updatingSystemWhen: .rendering)
         
         for orb in orbEntities {
-            
             
             let pos = energySuckerEntity.position(relativeTo: nil)
             let orbPos = orb.position(relativeTo: nil)
@@ -96,6 +101,8 @@ class AttractionSystem: System {
         let b = ciColor.blue * 256
         
         BLEViewModel.writeToDevice(value: "\(Int(r)),\(Int(g)),\(Int(b))")
+        
+        // what would happen if you don't clone the entity rather just play the animation of existing entity.
         
         // start the particle animation
         let particleSystem = mainParticleEntity.clone(recursive: true)

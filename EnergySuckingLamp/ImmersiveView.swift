@@ -40,13 +40,12 @@ struct ImmersiveView: View {
                 content.add(rightHandEntity)
                 
                 //create multiple orbs
-                // set the color of the particle system of the orb
                 
                 for i in 0 ..< 7 {
                     let orbClone = orb.clone(recursive: true)
                     orbClone.name = "Orb_\(i)";
                     
-                    //set position of orb
+                    //set position of orb in meters
                     orbClone.position = [
                         Float.random(in: -1 ... 1),
                         Float.random(in: 0.5 ... 1.5),
@@ -56,7 +55,6 @@ struct ImmersiveView: View {
                     
                     //get material of the orb and set the color
                     var mat = orbClone.components[ModelComponent.self]?.materials.first as! ShaderGraphMaterial
-                    // test this may not work
                     do {
                         try mat.setParameter(name: "EmissiveColor", value: .color(color))
                         orbClone.components[ModelComponent.self]?.materials = [mat]
@@ -64,7 +62,6 @@ struct ImmersiveView: View {
                     catch {
                         print(error.localizedDescription)
                     }
-                    
                     
                     content.add(orbClone)
                 }
